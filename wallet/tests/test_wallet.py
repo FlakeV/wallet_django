@@ -35,7 +35,7 @@ class WalletAPITest(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_fund_transfer(self):
+    def test_fund_transfer_success(self):
         url = reverse('transfer_money', args=[self.sender.id])
         data = {
             'sender_wallet_id': self.sender_wallet.id,
@@ -43,5 +43,26 @@ class WalletAPITest(APITestCase):
             'amount': 100
         }
         response = self.client.post(url, data, format='json')
-        assert response.status_code == 200, response.data
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_fund_transfer_fail(self):
+        url = reverse('transfer_money', args=[self.sender.id])
+        data = {
+            'sender_wallet_id': self.sender_wallet.id,
+            'recipient_wallet_id': self.receiver_wallet.id,
+            'amount': 100000
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Not enough money in the sender', response.data['message'])
+
+    def test_not_access_to_wallet(self):
+        url = reverse('transfer_money', args=[self.receiver.id])
+        data = {
+            'sender_wallet_id': self.sender_wallet.id,
+            'recipient_wallet_id': self.receiver_wallet.id,
+            'amount': 100
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('You don\'t have access to this wallet', response.data['message'])

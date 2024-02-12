@@ -7,23 +7,34 @@ services:
       POSTGRES_DB: wallet_db
       POSTGRES_USER: wallet_user
       POSTGRES_PASSWORD: wallet_password
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d wallet_db -U wallet_user" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   wallet_db:
     build: .
-    command: python manage.py migrate && python manage.py createsuperuser --noinput
-    environment:
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_PASSWORD=admin
-      - DJANGO_SUPERUSER_EMAIL=admin@admin.com
+    command: python manage.py migrate
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   wallet_app:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - wallet_db
+
+volumes:
+  postgres:

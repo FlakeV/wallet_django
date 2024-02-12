@@ -136,7 +136,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': '/app/logs/wallet.log',
+            'filename': '/app/wallet.log',
         },
     },
     'loggers': {

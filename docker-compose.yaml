@@ -10,7 +10,11 @@ services:
 
   wallet_db:
     build: .
-    command: python manage.py migrate
+    command: python manage.py migrate && python manage.py createsuperuser --noinput
+    environment:
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@admin.com
     depends_on:
       - postgres
 

@@ -1,0 +1,1 @@
+from .test_wallet import WalletAPITest
